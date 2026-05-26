@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>欢迎 · 逊和和平精英空军基地</title>
+    <style>
+        /* 极简重置 + 纯粹欢迎界面 · 无场景插图 · 零功能点 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #eef2f5;   /* 柔和浅灰蓝基调，不绘制任何场景，纯色背景 */
+            font-family: system-ui, -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Noto Sans', sans-serif;
+            font-weight: 400;
+            line-height: 1.4;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        /* 简约中央卡片 · 只承载欢迎文字，无装饰图形、无渐变背景、无任何交互控件 */
+        .welcome-container {
+            max-width: 720px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 28px;
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.03), 0 2px 4px rgba(0, 0, 0, 0.02);
+            padding: 3rem 2rem;
+            text-align: center;
+            transition: none;           /* 完全无动效或悬浮反馈 */
+            border: 1px solid rgba(0, 0, 0, 0.04);
+        }
+
+        /* 欢迎主标题区 — 安静、克制，仅传递文字 */
+        .greeting-text {
+            font-size: 1.75rem;
+            letter-spacing: -0.01em;
+            font-weight: 430;
+            color: #4a5b6e;
+            margin-bottom: 1rem;
+        }
+
+        /* 基地全称 — 突出但不张扬，纯文本力量 */
+        .base-name {
+            font-size: 2.4rem;
+            font-weight: 590;
+            color: #1e2a36;
+            line-height: 1.25;
+            letter-spacing: -0.3px;
+            word-break: break-word;
+            margin-bottom: 0.5rem;
+        }
+
+        /* 完全无功能提示 —— 不添加任何按钮、引导、动效、装饰性副文本 */
+        /* 只有单纯欢迎 + 基地名称 */
+
+        /* 极细分隔思考？但为了“什么场景也不要绘制”，连分割线都不要，保持绝对纯粹的文本氛围 */
+        /* 没有任何阴影动画、悬停变化、点击事件、光标变化 */
+        
+        /* 保证没有任何 :hover 或 active 改变样式，确保零交互 */
+        .welcome-container,
+        .greeting-text,
+        .base-name {
+            cursor: default;
+            user-select: text;    /* 允许复制文字，但完全不是功能控件，仅基础体验 */
+        }
+
+        /* 为小屏幕做舒适的排版 */
+        @media (max-width: 560px) {
+            .welcome-container {
+                padding: 2.2rem 1.5rem;
+            }
+            .greeting-text {
+                font-size: 1.4rem;
+            }
+            .base-name {
+                font-size: 1.9rem;
+            }
+        }
+
+        /* 窄屏适配：确保两行甚至自动换行都不影响整洁 */
+        @media (max-width: 420px) {
+            .base-name {
+                font-size: 1.65rem;
+            }
+        }
+
+        /* 没有任何图片、canvas、svg、iframe、背景图案、伪元素绘图 ——
+           彻底符合“无场景绘制，简约风，无任何功能” */
+        /* 无 :before / :after 创造图形，只有纯粹的文本盒子 */
+    </style>
+</head>
+<body>
+    <div class="welcome-container">
+        <!-- 纯粹欢迎语 + 基地全称，无额外装饰，零交互控件 -->
+        <div class="greeting-text">欢迎游玩</div>
+        <div class="base-name">逊和和平精英空军基地</div>
+        <!-- 不设置副标题、提示、版本号、脚注，避免偏离纯粹欢迎界面 -->
+        <!-- 无按钮，无链接，无输入框，无任何功能区域 -->
+    </div>
+</body>
+</html>
