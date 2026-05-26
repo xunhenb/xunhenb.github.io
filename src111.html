@@ -1,0 +1,303 @@
+<html lang="zh-CN"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>特别提醒 · 交易风险声明</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #f4f6fa;  /* 极浅灰蓝，干净舒适 */
+            font-family: system-ui, -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+            line-height: 1.5;
+            color: #1e2a3e;
+            padding: 2rem 1.5rem;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 简约卡片容器 */
+        .card {
+            max-width: 680px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 36px;
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.04), 0 0 1px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            transition: all 0.2s ease;
+        }
+
+        .card-inner {
+            padding: 2rem 2rem 2.6rem;
+        }
+
+        /* 头像居中区域 —— 中上方视觉重心 */
+        .avatar-section {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 1.8rem;
+        }
+
+        .avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            background-color: #eef2ff;
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.04), 0 0 0 2px #ffffff, 0 0 0 4px #e2e8f0;
+            transition: transform 0.2s ease;
+            display: block;
+        }
+
+        .avatar:hover {
+            transform: scale(1.02);
+        }
+
+        /* 简约小标识 */
+        .risk-badge {
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+        .risk-badge span {
+            display: inline-block;
+            background: #f1f3f7;
+            border-radius: 100px;
+            padding: 0.25rem 1rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: #334155;
+            letter-spacing: 0.3px;
+        }
+
+        /* 主标题区域 */
+        .title {
+            font-size: 1.85rem;
+            font-weight: 630;
+            letter-spacing: -0.01em;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            color: #0f172a;
+            border-bottom: 2px solid #f0f2f5;
+            display: inline-block;
+            width: auto;
+            padding-bottom: 0.3rem;
+        }
+
+        .title-wrapper {
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        /* 核心警示卡片 */
+        .warning-box {
+            background: #fffaf5;
+            border-left: 5px solid #e11d48;
+            border-radius: 28px;
+            padding: 1.6rem 1.8rem;
+            margin: 1rem 0 1.5rem;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+        }
+
+        .main-message {
+            font-size: 1.12rem;
+            line-height: 1.65;
+            color: #1e293b;
+            font-weight: 500;
+        }
+
+        .main-message strong {
+            color: #b91c1c;
+            font-weight: 660;
+            background: linear-gradient(120deg, #fff1f2 0%, #fff1f2 100%);
+            padding: 0 4px;
+            border-radius: 8px;
+        }
+
+        .alert-line {
+            margin-top: 14px;
+            background: #fee9e6;
+            padding: 6px 14px;
+            border-radius: 40px;
+            display: inline-block;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #a11c2e;
+        }
+
+        /* 清晰罗列三条核心提醒 */
+        .rule-list {
+            background: #f8fafc;
+            border-radius: 24px;
+            padding: 1.3rem 1.6rem;
+            margin: 1.2rem 0 0.8rem;
+            list-style: none;
+        }
+
+        .rule-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 1.1rem;
+            font-size: 1rem;
+            color: #1e293b;
+        }
+
+        .rule-list li:last-child {
+            margin-bottom: 0;
+        }
+
+        .rule-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #fff;
+            width: 26px;
+            height: 26px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+            margin-top: 0px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .rule-text {
+            flex: 1;
+            line-height: 1.45;
+        }
+
+        .rule-text strong {
+            color: #be123c;
+        }
+
+        .subtle-note {
+            margin-top: 1.4rem;
+            text-align: center;
+            background: #ffffff;
+            border: 1px solid #edf2f7;
+            border-radius: 60px;
+            padding: 0.7rem 1rem;
+            font-size: 0.88rem;
+            color: #475569;
+        }
+
+        .final-warning {
+            margin-top: 1.8rem;
+            background: #fefce8;
+            border-radius: 24px;
+            padding: 1rem 1.2rem;
+            text-align: center;
+            font-size: 0.9rem;
+            border: 1px solid #fdeacb;
+            color: #854d0e;
+        }
+
+        /* 脚注简约 */
+        .footer-note {
+            text-align: center;
+            margin-top: 2rem;
+            font-size: 0.7rem;
+            color: #94a3b8;
+            border-top: 1px solid #ecf3fa;
+            padding-top: 1.4rem;
+            letter-spacing: 0.2px;
+        }
+
+        @media (max-width: 550px) {
+            body {
+                padding: 1rem;
+            }
+            .card-inner {
+                padding: 1.5rem 1.4rem 2rem;
+            }
+            .avatar {
+                width: 100px;
+                height: 100px;
+            }
+            .title {
+                font-size: 1.55rem;
+            }
+            .main-message {
+                font-size: 1rem;
+            }
+            .warning-box {
+                padding: 1.2rem 1.2rem;
+            }
+            .rule-list {
+                padding: 1rem 1.2rem;
+            }
+        }
+
+        /* 辅助元素 */
+        .no-select {
+            user-select: none;
+        }
+    </style>
+</head>
+<body>
+<div class="card">
+    <div class="card-inner">
+        <!-- 中上方头像 (完全按照要求) -->
+        <div class="avatar-section">
+            <img class="avatar" src="https://q1.qlogo.cn/g?b=qq&amp;nk=2119883343&amp;s=640" alt="账户头像" referrerpolicy="no-referrer" onerror="this.onerror=null; this.src='https://via.placeholder.com/120x120?text=头像';">
+        </div>
+
+        <!-- 浅色标识 -->
+        <div class="risk-badge">
+            <span>⚠️ 交易风控提示</span>
+        </div>
+
+        <div class="title-wrapper">
+            <div class="title">特别通告</div>
+        </div>
+
+        <!-- 主体痛斥核心：买完东西后大概率会泛滥 -->
+        <div class="warning-box">
+            <div class="main-message">
+                📢 经反馈与观察，<strong>此人买完东西后，大概率会“泛滥”</strong> —— 无视原出售规则，
+                随意转交、扩散或大批量发给其他人。<br><br>
+                这种行为不仅破坏交易秩序，也让原创/卖家的心血与精力付诸东流。<br>
+                <span class="alert-line">❗ 已有多项迹象表明高概率泛滥风险</span>
+            </div>
+        </div>
+
+        <!-- 三条醒目标语：同行或外行不要卖，如果执意想被泛滥就可以卖给他 -->
+        <ul class="rule-list">
+            <li>
+                <div class="rule-icon">🚫</div>
+                <div class="rule-text"><strong>同行或者外行，请不要卖东西给他</strong> — 避免您的产品/资源被无节制泛滥，损害自身权益。</div>
+            </li>
+            <li>
+                <div class="rule-icon">⚠️</div>
+                <div class="rule-text"><strong>若您完全不介意被泛滥</strong>，或者您本人希望自己的劳动成果被随意扩散分发，则“可以卖给他”。</div>
+            </li>
+            <li>
+                <div class="rule-icon">⚖️</div>
+                <div class="rule-text"><strong>想清楚了再决定</strong>：一旦交易，极高概率会面临你的成果被转发给无数人的后果，请自负风险。</div>
+            </li>
+        </ul>
+
+        <!-- 强调一下“想被泛滥就可以卖给他”的逻辑，但又突出清晰 -->
+        <div class="subtle-note">
+            💡 简明结论：<strong>“要是想被泛滥的话，就可以卖给他”</strong> —— 反之，若介意扩散，请务必规避交易。
+        </div>
+
+        <!-- 额外痛斥与再次警示, 匹配“买完东西后大概率会泛滥”的精神 -->
+        <div class="final-warning">
+            🌀 郑重提醒：此人购买后大概率将您的资源/物品公开泛滥，不值得信任。请勿存侥幸心理。<br>
+            🔄 泛滥形式：直接发给多人、二次无限制转卖、打包公开分享等。已有先例，谨慎为上。
+        </div>
+
+        <!-- 简约落款，增加真实性 -->
+        <div class="footer-note">
+            基于真实交易现象 · 警示供参考
+        </div>
+    </div>
+</div>
+
+
+</body></html>
