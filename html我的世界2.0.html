@@ -1,0 +1,834 @@
+以下是您要求的“我的世界2.0”HTML游戏的深度优化版本。它是一款第一人称探索与建造游戏，拥有动态的昼夜循环、生存战斗和物品收集系统。
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>我的世界2.0 - 深度优化版 | 生存建造与战斗</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Segoe UI', 'Minecraft', 'Courier New', monospace;
+            user-select: none;
+        }
+        /* 准星 */
+        #crosshair {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 22px;
+            height: 22px;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 20;
+        }
+        .crosshair-dot {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            width: 4px;
+            height: 4px;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 0 2px rgba(0,0,0,0.5);
+        }
+        .crosshair-line {
+            position: absolute;
+            background: white;
+            box-shadow: 0 0 0 1px black;
+        }
+        /* UI面板 */
+        #ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.6);
+            padding: 12px 18px;
+            border-radius: 12px;
+            backdrop-filter: blur(8px);
+            pointer-events: none;
+            z-index: 15;
+            color: white;
+            font-weight: bold;
+            border-left: 4px solid #ffaa33;
+            font-size: 14px;
+        }
+        #hp-bar-container {
+            width: 220px;
+            height: 14px;
+            background: #3a2a1f;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 5px 0;
+            border: 1px solid #8b5a2b;
+        }
+        #hp-fill {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, #e34d4d, #c53a3a);
+            border-radius: 10px;
+            transition: width 0.1s linear;
+        }
+        #time-info, #zombie-counter {
+            margin-top: 6px;
+            text-shadow: 1px 1px 0 #000;
+            letter-spacing: 1px;
+        }
+        /* 底部快捷栏 */
+        #hotbar {
+            position: absolute;
+            bottom: 28px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 8px;
+            background: rgba(30,30,30,0.85);
+            padding: 8px 16px;
+            border-radius: 20px;
+            backdrop-filter: blur(12px);
+            border: 1px solid #aaa;
+            z-index: 15;
+            pointer-events: auto;
+        }
+        .hotbar-slot {
+            width: 54px;
+            height: 54px;
+            background: #2c2c2ce6;
+            border: 2px solid #6b6b6b;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            transition: all 0.1s;
+            cursor: pointer;
+            font-size: 12px;
+            text-shadow: 0 0 2px black;
+        }
+        .hotbar-slot.active {
+            border-color: #ffcc44;
+            background: #4a4a4a;
+            box-shadow: 0 0 8px gold;
+            transform: scale(1.02);
+        }
+        .slot-icon {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+        .slot-count {
+            background: #111;
+            padding: 0 4px;
+            border-radius: 10px;
+            font-size: 10px;
+        }
+        /* 背包大界面 */
+        #inventory-panel {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 400px;
+            background: rgba(20,20,30,0.95);
+            backdrop-filter: blur(20px);
+            border: 3px solid #bba87a;
+            border-radius: 20px;
+            display: none;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 14px;
+            padding: 25px;
+            z-index: 100;
+            box-shadow: 0 0 40px black;
+        }
+        .inv-slot {
+            background: #2e2e3a;
+            border-radius: 12px;
+            padding: 12px 5px;
+            text-align: center;
+            color: #ffe6b3;
+            font-weight: bold;
+            border: 2px solid #6a5a3a;
+            transition: 0.05s linear;
+            cursor: pointer;
+        }
+        .inv-slot.active {
+            border-color: #ffcc44;
+            background: #4a3e28;
+            box-shadow: 0 0 0 2px #ffcc66;
+        }
+        #message-area {
+            position: absolute;
+            bottom: 100px;
+            left: 20px;
+            background: rgba(0,0,0,0.7);
+            color: #ffd966;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            pointer-events: none;
+            font-weight: bold;
+            z-index: 15;
+        }
+        .damage-flash {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255,0,0,0.3), transparent);
+            pointer-events: none;
+            z-index: 30;
+            opacity: 0;
+            transition: opacity 0.1s;
+        }
+        .controls-tip {
+            position: absolute;
+            bottom: 18px;
+            right: 20px;
+            background: #000000aa;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            color: #ccc;
+            font-family: monospace;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="crosshair">
+        <div class="crosshair-dot"></div>
+        <div style="position:absolute; top:50%; left:0; width:100%; height:2px; background:white; margin-top:-1px; box-shadow:0 0 0 1px black;"></div>
+        <div style="position:absolute; top:0; left:50%; width:2px; height:100%; background:white; margin-left:-1px; box-shadow:0 0 0 1px black;"></div>
+    </div>
+    <div id="ui">
+        <div>❤️ 生命值</div>
+        <div id="hp-bar-container"><div id="hp-fill"></div></div>
+        <div id="time-info">🌞 时间: 06:00 白天</div>
+        <div id="zombie-counter">🧟 僵尸: 0</div>
+    </div>
+    <div id="hotbar"></div>
+    <div id="inventory-panel"></div>
+    <div id="message-area">✨ 按 E 打开背包 | 左键攻击/挖掘 | 右键放置 | 1-5 切换物品</div>
+    <div class="controls-tip">🖱️ 点击画面锁定鼠标 | WASD移动 | 空格跳跃</div>
+    <div class="damage-flash" id="damageFlash"></div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
+
+        // ----- 全局配置 -----
+        const WORLD_SIZE = 42;        // -21 到 21 范围
+        const BLOCK_TYPES = [
+            { name: '🌿 草方块', color: 0x7cb518, tex: '🌿' },   // 0
+            { name: '🪨 石头', color: 0x8a8c8e, tex: '🪨' },     // 1
+            { name: '🪵 木头', color: 0xbc9a6c, tex: '🪵' },      // 2
+            { name: '🧱 泥土', color: 0x8b5a2b, tex: '🧱' },      // 3
+            { name: '🍃 树叶', color: 0x3c9e2d, tex: '🍃' }       // 4
+        ];
+        
+        // 玩家数据
+        let hp = 100;
+        let maxHp = 100;
+        let inventory = [10, 5, 5, 0, 0];  // 初始:草10,石5,木5,泥土0,树叶0
+        let selectedSlot = 0;   // 0-4
+        let isInvOpen = false;
+        
+        // 攻击冷却
+        let attackCooldown = 0;
+        let damageCooldown = 0;
+        
+        // 世界对象
+        const blocks = new Map();   // key: "x,y,z" , value: mesh
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x0a1030);
+        scene.fog = new THREE.FogExp2(0x0a1030, 0.008);
+        
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 500);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        document.body.appendChild(renderer.domElement);
+        
+        // 光照系统
+        const ambientLight = new THREE.AmbientLight(0x404060, 0.55);
+        scene.add(ambientLight);
+        const sunLight = new THREE.DirectionalLight(0xffeedd, 1.2);
+        sunLight.position.set(50, 30, 20);
+        sunLight.castShadow = true;
+        sunLight.receiveShadow = false;
+        sunLight.shadow.mapSize.width = 1024;
+        sunLight.shadow.mapSize.height = 1024;
+        sunLight.shadow.camera.near = 0.5;
+        sunLight.shadow.camera.far = 80;
+        sunLight.shadow.camera.left = -25;
+        sunLight.shadow.camera.right = 25;
+        sunLight.shadow.camera.top = 25;
+        sunLight.shadow.camera.bottom = -25;
+        scene.add(sunLight);
+        
+        const fillLight = new THREE.PointLight(0x8866ff, 0.2);
+        fillLight.position.set(5, 10, 5);
+        scene.add(fillLight);
+        
+        // 实体管理
+        let zombies = [];
+        let drops = [];
+        
+        // ----- 辅助函数: 方块材质 (简单但好看的颜色 + 粗糙感)
+        function getMaterial(type) {
+            const color = BLOCK_TYPES[type].color;
+            return new THREE.MeshStandardMaterial({ color: color, roughness: 0.7, metalness: 0.05 });
+        }
+        
+        // 添加方块到场景
+        function addBlock(x, y, z, type) {
+            if (y < -2 || y > 20) return null;
+            const key = `${x},${y},${z}`;
+            if (blocks.has(key)) return null;
+            const geometry = new THREE.BoxGeometry(0.96, 0.96, 0.96);
+            const material = getMaterial(type);
+            const cube = new THREE.Mesh(geometry, material);
+            cube.position.set(x, y, z);
+            cube.castShadow = true;
+            cube.receiveShadow = true;
+            cube.userData = { type: type, x, y, z };
+            scene.add(cube);
+            blocks.set(key, cube);
+            return cube;
+        }
+        
+        function removeBlock(x, y, z) {
+            const key = `${x},${y},${z}`;
+            const block = blocks.get(key);
+            if (block) {
+                scene.remove(block);
+                blocks.delete(key);
+                return block.userData.type;
+            }
+            return null;
+        }
+        
+        // 生成地形 (高度变化 + 树木)
+        function generateTerrain() {
+            for (let x = -WORLD_SIZE/2; x <= WORLD_SIZE/2; x++) {
+                for (let z = -WORLD_SIZE/2; z <= WORLD_SIZE/2; z++) {
+                    // 简单噪声: 正弦/余弦结合, 做出丘陵
+                    let height = 0;
+                    height += Math.sin(x * 0.3) * 0.8;
+                    height += Math.cos(z * 0.3) * 0.8;
+                    height += Math.sin((x * 0.7 + z * 0.5) * 0.5) * 0.5;
+                    height = Math.floor(height + 0.5);
+                    height = Math.max(0, Math.min(3, height));
+                    const groundY = -1 + height;
+                    
+                    // 底层石头
+                    addBlock(x, -2, z, 1);
+                    addBlock(x, -1, z, 1);
+                    // 地表方块: 如果高度>0 则为草, 泥土层
+                    if (groundY === -1) {
+                        addBlock(x, groundY, z, 0); // 草
+                    } else {
+                        addBlock(x, groundY, z, 0);
+                        for (let i = -1; i <= groundY-1; i++) {
+                            if (i > -2) addBlock(x, i, z, 3); // 泥土填充
+                        }
+                    }
+                    
+                    // 随机生成树木 (草方块上, 且避开出生点范围)
+                    const isTreeSpot = Math.random() < 0.06 && groundY === -1 && (Math.abs(x) > 4 || Math.abs(z) > 4);
+                    if (isTreeSpot) {
+                        const trunkY = groundY + 1;
+                        if (trunkY < 6) {
+                            addBlock(x, trunkY, z, 2);
+                            addBlock(x, trunkY+1, z, 2);
+                            addBlock(x, trunkY+2, z, 2);
+                            // 树叶
+                            for (let dx = -1; dx <= 1; dx++) {
+                                for (let dz = -1; dz <= 1; dz++) {
+                                    if (dx === 0 && dz === 0) continue;
+                                    addBlock(x+dx, trunkY+2, z+dz, 4);
+                                }
+                            }
+                            addBlock(x, trunkY+3, z, 4);
+                            addBlock(x+1, trunkY+1, z, 4);
+                            addBlock(x-1, trunkY+1, z, 4);
+                            addBlock(x, trunkY+1, z+1, 4);
+                            addBlock(x, trunkY+1, z-1, 4);
+                        }
+                    }
+                }
+            }
+            // 出生点平台平整
+            for (let ix = -2; ix <= 2; ix++) {
+                for (let iz = -2; iz <= 2; iz++) {
+                    removeBlock(ix, 0, iz);
+                    addBlock(ix, 0, iz, 0);
+                }
+            }
+        }
+        
+        // ----- 掉落物生成 -----
+        function spawnDrop(pos, typeId) {
+            // 确保掉落物类型有效 0~4
+            if (typeId < 0 || typeId > 4) typeId = 0;
+            const geom = new THREE.BoxGeometry(0.4, 0.4, 0.4);
+            const mat = new THREE.MeshStandardMaterial({ color: BLOCK_TYPES[typeId].color, emissive: 0x221100 });
+            const item = new THREE.Mesh(geom, mat);
+            item.position.copy(pos);
+            item.userData = { type: typeId, age: 0 };
+            scene.add(item);
+            drops.push(item);
+        }
+        
+        // 僵尸类 (增强AI + 碰撞 + 生命)
+        class Zombie {
+            constructor(x, z) {
+                this.group = new THREE.Group();
+                // 身体
+                const bodyGeo = new THREE.BoxGeometry(0.7, 1.6, 0.7);
+                const bodyMat = new THREE.MeshStandardMaterial({ color: 0x4c6a3b, roughness: 0.5 });
+                const body = new THREE.Mesh(bodyGeo, bodyMat);
+                body.castShadow = true;
+                body.position.y = 0.8;
+                this.group.add(body);
+                // 头部
+                const headGeo = new THREE.BoxGeometry(0.7, 0.7, 0.7);
+                const headMat = new THREE.MeshStandardMaterial({ color: 0x6e8b3c });
+                const head = new THREE.Mesh(headGeo, headMat);
+                head.position.y = 1.6;
+                head.castShadow = true;
+                this.group.add(head);
+                // 眼睛
+                const eyeMat = new THREE.MeshStandardMaterial({ color: 0xff3333 });
+                const leftEye = new THREE.Mesh(new THREE.SphereGeometry(0.12), eyeMat);
+                leftEye.position.set(-0.2, 1.75, 0.36);
+                const rightEye = new THREE.Mesh(new THREE.SphereGeometry(0.12), eyeMat);
+                rightEye.position.set(0.2, 1.75, 0.36);
+                this.group.add(leftEye);
+                this.group.add(rightEye);
+                
+                this.group.position.set(x, 5, z);
+                this.velocityY = 0;
+                this.hp = 35;
+                this.attackTimer = 0;
+                this.group.userData = { isZombie: true, ref: this };
+                scene.add(this.group);
+            }
+            
+            update(dt, playerPos) {
+                if (this.hp <= 0) return false;
+                // 移动逻辑: 移向玩家
+                const toPlayer = new THREE.Vector3().subVectors(playerPos, this.group.position);
+                toPlayer.y = 0;
+                const dist = toPlayer.length();
+                if (dist > 0.2) {
+                    const dir = toPlayer.clone().normalize();
+                    let moveX = dir.x * 2.4 * dt;
+                    let moveZ = dir.z * 2.4 * dt;
+                    // 简单碰撞(方块碰撞)
+                    const newX = this.group.position.x + moveX;
+                    const newZ = this.group.position.z + moveZ;
+                    if (!checkCollisionAt(newX, this.group.position.y, newZ, 0.45, 1.6)) {
+                        this.group.position.x = newX;
+                        this.group.position.z = newZ;
+                    }
+                }
+                // 重力
+                this.velocityY -= 18 * dt;
+                this.group.position.y += this.velocityY * dt;
+                if (checkCollisionAt(this.group.position.x, this.group.position.y, this.group.position.z, 0.45, 1.6)) {
+                    this.group.position.y -= this.velocityY * dt;
+                    this.velocityY = 0;
+                    // 简单跳跃
+                    if (Math.random() < 0.02) this.velocityY = 5;
+                }
+                // 攻击冷却
+                if (this.attackTimer > 0) this.attackTimer -= dt;
+                if (dist < 1.3 && this.attackTimer <= 0 && damageCooldown <= 0) {
+                    hp = Math.max(0, hp - 12);
+                    this.attackTimer = 0.6;
+                    updateUI();
+                    flashDamage();
+                    if (hp <= 0) handleDeath();
+                }
+                return true;
+            }
+            
+            takeDamage(amount) {
+                this.hp -= amount;
+                if (this.hp <= 0) {
+                    // 死亡掉落
+                    const dropType = Math.floor(Math.random() * 3); // 0~2 常见掉落
+                    spawnDrop(this.group.position.clone(), dropType);
+                    spawnDrop(this.group.position.clone(), 3); // 额外泥土
+                    scene.remove(this.group);
+                    return true;
+                }
+                return false;
+            }
+        }
+        
+        // 碰撞检测函数 (针对方块)
+        function checkCollisionAt(x, y, z, radius, height) {
+            const minX = Math.floor(x - radius);
+            const maxX = Math.floor(x + radius);
+            const minZ = Math.floor(z - radius);
+            const maxZ = Math.floor(z + radius);
+            const minY = Math.floor(y);
+            const maxY = Math.floor(y + height);
+            for (let ix = minX; ix <= maxX; ix++) {
+                for (let iz = minZ; iz <= maxZ; iz++) {
+                    for (let iy = minY; iy <= maxY; iy++) {
+                        const key = `${ix},${iy},${iz}`;
+                        if (blocks.has(key)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+        
+        // 玩家碰撞
+        function updatePlayerCollision(dt, moveVec) {
+            const newPos = camera.position.clone().add(moveVec);
+            if (!checkCollisionAt(newPos.x, newPos.y - 1.5, newPos.z, 0.35, 1.7)) {
+                camera.position.x = newPos.x;
+                camera.position.z = newPos.z;
+            }
+            // Y轴移动
+            let newY = camera.position.y + moveVec.y;
+            if (!checkCollisionAt(camera.position.x, newY - 1.5, camera.position.z, 0.35, 1.7)) {
+                camera.position.y = newY;
+            } else if (moveVec.y < 0) {
+                // 在地面
+                playerVel.y = 0;
+                canJump = true;
+            }
+        }
+        
+        // 辅助跳跃标志
+        let playerVel = new THREE.Vector3();
+        let canJump = true;
+        
+// 死亡处理: 掉落所有物品，重生重置位置血量
+        function handleDeath() {
+            if (hp > 0) return;
+            // 掉落背包所有物品
+            for (let i = 0; i < inventory.length; i++) {
+                const count = inventory[i];
+                for (let c = 0; c < Math.min(count, 12); c++) {
+                    spawnDrop(camera.position.clone(), i);
+                }
+            }
+            inventory.fill(0);
+            inventory[0] = 5; // 重生送一点草
+            inventory[1] = 2;
+            hp = maxHp;
+            camera.position.set(0, 6, 0);
+            playerVel.set(0, 0, 0);
+            canJump = true;
+            // 清除僵尸以免继续攻击
+            zombies.forEach(z => { if(z.group) scene.remove(z.group); });
+            zombies = [];
+            drops.forEach(d => scene.remove(d));
+            drops = [];
+            updateUI();
+            updateHotbarUI();
+            showMessage("💀 你已死亡！物品掉落，重生在起点 💀", 2000);
+        }
+        
+        function flashDamage() {
+            const flashDiv = document.getElementById('damageFlash');
+            flashDiv.style.opacity = '0.6';
+            setTimeout(() => flashDiv.style.opacity = '0', 150);
+        }
+        
+        function showMessage(msg, duration = 2000) {
+            const msgDiv = document.getElementById('message-area');
+            msgDiv.innerHTML = msg;
+            setTimeout(() => { if (msgDiv.innerHTML === msg) msgDiv.innerHTML = "✨ 按 E 打开背包 | 左键攻击/挖掘 | 右键放置"; }, duration);
+        }
+        
+        // UI刷新
+        function updateUI() {
+            const percent = Math.max(0, (hp / maxHp) * 100);
+            document.getElementById('hp-fill').style.width = `${percent}%`;
+            if (hp <= 0) handleDeath();
+        }
+        
+        function updateHotbarUI() {
+            const hotbarDiv = document.getElementById('hotbar');
+            hotbarDiv.innerHTML = '';
+            for (let i = 0; i < BLOCK_TYPES.length; i++) {
+                const slot = document.createElement('div');
+                slot.className = `hotbar-slot ${selectedSlot === i ? 'active' : ''}`;
+                slot.innerHTML = `<div class="slot-icon">${BLOCK_TYPES[i].tex}</div>
+                                  <div>${inventory[i]}</div>`;
+                slot.addEventListener('click', () => { selectedSlot = i; updateHotbarUI(); updateInvPanel(); });
+                hotbarDiv.appendChild(slot);
+            }
+        }
+        
+        function updateInvPanel() {
+            const panel = document.getElementById('inventory-panel');
+            if (!panel) return;
+            panel.innerHTML = '';
+            for (let i = 0; i < BLOCK_TYPES.length; i++) {
+                const invSlot = document.createElement('div');
+                invSlot.className = `inv-slot ${selectedSlot === i ? 'active' : ''}`;
+                invSlot.innerHTML = `<div style="font-size:28px;">${BLOCK_TYPES[i].tex}</div>
+                                    <div>${BLOCK_TYPES[i].name}</div>
+                                    <div style="font-weight:bold;">✖️ ${inventory[i]}</div>`;
+                invSlot.addEventListener('click', () => { selectedSlot = i; updateHotbarUI(); updateInvPanel(); });
+                panel.appendChild(invSlot);
+            }
+        }
+        
+        // 攻击 (左键)
+        function handleAttack(raycaster) {
+            if (attackCooldown > 0) return false;
+            // 先检测僵尸
+            const zombieHits = [];
+            zombies.forEach(z => {
+                const box = new THREE.Box3().setFromObject(z.group);
+                const rayOrigin = camera.position;
+                const rayDir = raycaster.ray.direction;
+                const tempVec = new THREE.Vector3();
+                if (box.intersectRay(raycaster.ray, tempVec)) {
+                    zombieHits.push({ z: z, distance: camera.position.distanceTo(tempVec) });
+                }
+            });
+            zombieHits.sort((a,b)=>a.distance - b.distance);
+            if (zombieHits.length > 0 && zombieHits[0].distance < 4.5) {
+                const zombie = zombieHits[0].z;
+                if (zombie.takeDamage(22)) {
+                    const idx = zombies.indexOf(zombie);
+                    if (idx !== -1) zombies.splice(idx, 1);
+                    showMessage("⚔️ 击败僵尸! 获得掉落物", 800);
+                }
+                attackCooldown = 0.35;
+                return true;
+            }
+            // 破坏方块
+            const intersects = raycaster.intersectObjects(Array.from(blocks.values()));
+            if (intersects.length > 0 && intersects[0].distance < 5) {
+                const hit = intersects[0].object;
+                const type = hit.userData.type;
+                const pos = hit.position;
+                if (removeBlock(pos.x, pos.y, pos.z) !== null) {
+                    spawnDrop(pos.clone(), type);
+                    attackCooldown = 0.2;
+                }
+                return true;
+            }
+            return false;
+        }
+        
+        // 放置方块
+        function handlePlace(raycaster) {
+            if (inventory[selectedSlot] <= 0) {
+                showMessage("❌ 没有足够的方块!", 600);
+                return;
+            }
+            const intersects = raycaster.intersectObjects(Array.from(blocks.values()));
+            if (intersects.length > 0 && intersects[0].distance < 5) {
+                const hit = intersects[0];
+                const point = hit.point;
+                const normal = hit.face.normal;
+                const newX = Math.round(hit.object.position.x + normal.x);
+                const newY = Math.round(hit.object.position.y + normal.y);
+                const newZ = Math.round(hit.object.position.z + normal.z);
+                const key = `${newX},${newY},${newZ}`;
+                if (!blocks.has(key) && newY > -1 && newY < 18) {
+                    addBlock(newX, newY, newZ, selectedSlot);
+                    inventory[selectedSlot]--;
+                    updateHotbarUI();
+                    updateInvPanel();
+                    showMessage(`📦 放置了 ${BLOCK_TYPES[selectedSlot].name}`, 400);
+                }
+            }
+        }
+        
+        // ----- 初始化控制器和输入-----
+        const controls = new PointerLockControls(camera, document.body);
+        const keyState = { w: false, s: false, a: false, d: false, space: false };
+        document.addEventListener('keydown', (e) => {
+            if (isInvOpen && e.code !== 'KeyE') return;
+            switch (e.code) {
+                case 'KeyW': keyState.w = true; break;
+                case 'KeyS': keyState.s = true; break;
+                case 'KeyA': keyState.a = true; break;
+                case 'KeyD': keyState.d = true; break;
+                case 'Space': if (canJump && controls.isLocked) { playerVel.y = 7.2; canJump = false; } break;
+                case 'KeyE': 
+                    isInvOpen = !isInvOpen;
+                    document.getElementById('inventory-panel').style.display = isInvOpen ? 'grid' : 'none';
+                    if (isInvOpen) { controls.unlock(); updateInvPanel(); } 
+                    else { controls.lock(); }
+                    break;
+                case 'Digit1': selectedSlot = 0; updateHotbarUI(); updateInvPanel(); break;
+                case 'Digit2': selectedSlot = 1; updateHotbarUI(); updateInvPanel(); break;
+                case 'Digit3': selectedSlot = 2; updateHotbarUI(); updateInvPanel(); break;
+                case 'Digit4': selectedSlot = 3; updateHotbarUI(); updateInvPanel(); break;
+                case 'Digit5': selectedSlot = 4; updateHotbarUI(); updateInvPanel(); break;
+            }
+        });
+        document.addEventListener('keyup', (e) => {
+            switch (e.code) { case 'KeyW': keyState.w = false; case 'KeyS': keyState.s = false; case 'KeyA': keyState.a = false; case 'KeyD': keyState.d = false; }
+        });
+        
+        window.addEventListener('mousedown', (e) => {
+            if (!controls.isLocked || isInvOpen) return;
+            const raycaster = new THREE.Raycaster();
+            raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
+            if (e.button === 0) { // 左键攻击/破坏
+                handleAttack(raycaster);
+            } else if (e.button === 2) { // 右键放置
+                handlePlace(raycaster);
+                e.preventDefault();
+            }
+        });
+        window.oncontextmenu = e => e.preventDefault();
+        
+        // 昼夜循环与动态光照
+        let gameTime = 600; // 分钟单位 0-2400
+        const TIME_SPEED = 1.8;
+        
+        // 僵尸生成
+        function updateZombieSpawning(isNight, dt) {
+            if (isNight && zombies.length < 12 && Math.random() < 0.008 * dt * 30) {
+                let angle = Math.random() * Math.PI * 2;
+                let radius = 15 + Math.random() * 12;
+                let x = camera.position.x + Math.cos(angle) * radius;
+                let z = camera.position.z + Math.sin(angle) * radius;
+                zombies.push(new Zombie(x, z));
+            }
+            document.getElementById('zombie-counter').innerHTML = `🧟 僵尸: ${zombies.length}`;
+        }
+        
+        // 物品捡取
+        function updateDrops() {
+            for (let i = 0; i < drops.length; i++) {
+                const d = drops[i];
+                d.position.y += Math.sin(Date.now() * 0.008) * 0.005;
+                if (d.position.distanceTo(camera.position) < 1.4) {
+                    const type = d.userData.type;
+                    if (inventory[type] !== undefined) inventory[type]++;
+                    else inventory[0]++;
+                    scene.remove(d);
+                    drops.splice(i,1);
+                    updateHotbarUI();
+                    updateInvPanel();
+                    i--;
+                }
+            }
+        }
+        
+        // ----- 主循环-----
+        generateTerrain();
+        camera.position.set(0, 5, 0);
+        controls.lock();
+        updateHotbarUI();
+        updateInvPanel();
+        
+        let lastTime = performance.now();
+        function animate() {
+            const now = performance.now();
+            let dt = Math.min(0.033, (now - lastTime) / 1000);
+            lastTime = now;
+            if (dt <= 0) dt = 0.016;
+            
+            // 冷却缩减
+            if (attackCooldown > 0) attackCooldown -= dt;
+            if (damageCooldown > 0) damageCooldown -= dt;
+            
+            // 昼夜时间
+            gameTime = (gameTime + dt * TIME_SPEED) % 2400;
+            const isNight = gameTime > 1800 || gameTime < 600;
+            const dayFactor = isNight ? 0.2 : Math.max(0.4, Math.sin(((gameTime - 600)/1200) * Math.PI));
+            sunLight.intensity = 0.7 + dayFactor * 0.7;
+            ambientLight.intensity = 0.3 + dayFactor * 0.4;
+            const skyHue = isNight ? 0.65 : 0.58;
+            const skySat = isNight ? 0.8 : 0.5;
+            const skyLight = isNight ? 0.08 : 0.25 + dayFactor * 0.3;
+            scene.background = new THREE.Color().setHSL(skyHue, skySat, skyLight);
+            if (isNight) sunLight.position.set(10, 5, -15);
+            else sunLight.position.set(30 * Math.sin(gameTime/2400*Math.PI*2), 25, 30 * Math.cos(gameTime/2400*Math.PI*2));
+            
+            // 时间UI
+            const hour = Math.floor(gameTime / 100);
+            const minute = Math.floor((gameTime % 100) * 0.6);
+            const timeStr = `${hour.toString().padStart(2,'0')}:${minute.toString().padStart(2,'0')}`;
+            document.getElementById('time-info').innerHTML = isNight ? `🌙 夜晚 ${timeStr} 🌙` : `☀️ 白天 ${timeStr} ☀️`;
+            
+            if (controls.isLocked && !isInvOpen) {
+                const move = new THREE.Vector3();
+                if (keyState.w) move.z -= 1;
+                if (keyState.s) move.z += 1;
+                if (keyState.a) move.x -= 1;
+                if (keyState.d) move.x += 1;
+                move.normalize();
+                const speed = 6.2 * dt;
+                const moveDelta = new THREE.Vector3();
+                controls.moveRight(move.x * speed);
+                controls.moveForward(move.z * speed);
+                // 重力
+                playerVel.y -= 22 * dt;
+                const oldY = camera.position.y;
+                camera.position.y += playerVel.y * dt;
+                if (checkCollisionAt(camera.position.x, camera.position.y - 1.55, camera.position.z, 0.35, 1.7)) {
+                    camera.position.y = oldY;
+                    playerVel.y = 0;
+                    canJump = true;
+                } else {
+                    canJump = false;
+                }
+                // 边界限制防止掉落虚空
+                if (camera.position.y < -3) {
+                    hp = 0;
+                    handleDeath();
+                }
+                updateZombieSpawning(isNight, dt);
+                // 僵尸更新
+                for (let i=0; i<zombies.length; i++) {
+                    const alive = zombies[i].update(dt, camera.position);
+                    if (!alive || zombies[i].hp <= 0) {
+                        zombies.splice(i,1);
+                        i--;
+                    }
+                }
+                updateDrops();
+                updateUI();
+            }
+            renderer.render(scene, camera);
+            requestAnimationFrame(animate);
+        }
+        
+        animate();
+        // 自适应窗口
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+        showMessage("🎮 欢迎来到 Minecraft 2.0 增强版！击败僵尸，建造你的世界！", 3000);
+    </script>
+</body>
+</html>
